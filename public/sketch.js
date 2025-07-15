@@ -2,6 +2,10 @@ let canvas;
 let texture;
 let tilemap;
 
+let player_idle = [];
+let player_left = [];
+let player_right = [];
+
 let map = [
     [3, 2, 1, 17, 18, 1, 2, 1, 1, 3, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1],
     [2, 1, 19, 27, 28, 8, 5, 5, 5, 9, 1, 3, 1, 2, 1, 1, 1, 3, 1, 2],
@@ -13,7 +17,7 @@ let map = [
 ];
 
 let col_list = [22, 23, 24, 25, 31, 32, 33, 34, 35, 36, 12, 13, 15, 16, 4, 17, 18];
-let inte_list = [27, 28, 29];
+let inte_list = [27, 28, 29, 19];
 
 let cameraX = -300;
 let cameraY = 0;
@@ -23,14 +27,33 @@ let lastCameraY = 0;
 
 let playerX, playerY;
 
-let camXSpeed = 4;
-let camYSpeed = 4;
+let camXSpeed = 3;
+let camYSpeed = 3;
 
 let frame = 0;
 let pool_state = true;
 
+let player_state = 'idle';
+let player_cos = 0;
+let prollylast = 'left';
+
 function preload() {
     texture = loadImage('assets/tilemap.png')
+
+    player_idle[0] = loadImage('assets/player-idle1.png');
+    player_idle[1] = loadImage('assets/player-idle2.png');
+    player_idle[2] = loadImage('assets/player-idle3.png');
+    player_idle[3] = loadImage('assets/player-idle4.png');
+
+    player_left[0] = loadImage('assets/player-left1.png');
+    player_left[1] = loadImage('assets/player-left2.png');
+    player_left[2] = loadImage('assets/player-left3.png');
+    player_left[3] = loadImage('assets/player-left4.png');
+
+    player_right[0] = loadImage('assets/player-right1.png');
+    player_right[1] = loadImage('assets/player-right2.png');
+    player_right[2] = loadImage('assets/player-right3.png');
+    player_right[3] = loadImage('assets/player-right4.png');
 }
 
 function setup() {
@@ -94,6 +117,8 @@ function moveCharacter() {
         if (!isCollidingTile(0, -34) && !isCollidingInteractable(0, 40)) {
             cameraY -= camYSpeed;
         }
+
+        player_state = prollylast;
     }
 
     if (keyIsDown("S".charCodeAt(0))) {
@@ -104,6 +129,8 @@ function moveCharacter() {
         if (isCollidingInteractable(0, 40)) {
             cameraY += camYSpeed;
         }
+
+        player_state = prollylast;
     }
 
     if (keyIsDown("A".charCodeAt(0))) {
@@ -114,6 +141,9 @@ function moveCharacter() {
         if (isCollidingInteractable(0, 40)) {
             cameraX -= camXSpeed;
         }
+
+        prollylast = 'left';
+        player_state = prollylast;
     }
 
     if (keyIsDown("D".charCodeAt(0))) {
@@ -124,14 +154,21 @@ function moveCharacter() {
         if (isCollidingInteractable(0, 40)) {
             cameraX += camXSpeed;
         }
+
+        prollylast = 'right';
+        player_state = prollylast;
+    }
+
+    if (!keyIsDown("W".charCodeAt(0)) && !keyIsDown("S".charCodeAt(0)) &&
+        !keyIsDown("A".charCodeAt(0)) && !keyIsDown("D".charCodeAt(0))) {
+        player_state = 'idle';
     }
 
     tilemap.pos = [-cameraX, -cameraY];
 }
 
-function drawPlayer(x, y) {
-    fill(255, 0, 0);
-    rect(x, y, 64, 64);
+function drawPlayer(x, y, costume) {
+    image(costume, x, y, 100, 200);
 }
 
 function draw() {
@@ -140,10 +177,24 @@ function draw() {
     moveCharacter();
 
     tilemap.display();
-    drawPlayer(playerX, playerY);
 
     if (frame % 30 == 0) {
         pool_state = !pool_state;
+    }
+    if (frame % 15 == 0) {
+        player_cos += 1;
+        if (player_cos > 3) {
+            player_cos = 0;
+        }
+    }
+    frame++;
+
+    if (player_state === 'idle') {
+        drawPlayer(playerX, playerY, player_idle[player_cos]);
+    } else if (player_state === 'left') {
+        drawPlayer(playerX, playerY, player_left[player_cos]);
+    } else if (player_state === 'right') {
+        drawPlayer(playerX, playerY, player_right[player_cos]);
     }
 
     if (pool_state) {
@@ -160,5 +211,4 @@ function draw() {
             tilemap.tilemap[x][y] = map[y][x];
         }
     }
-    frame++;
 }
