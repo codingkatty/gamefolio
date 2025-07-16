@@ -11,6 +11,7 @@ body {
     align-items: center;
     width: 100%;
     overflow-y: hidden;
+    cursor: url('assets/crosshair.png') 16 16, auto;
 }
 
 #game {

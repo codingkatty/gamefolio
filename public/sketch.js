@@ -5,6 +5,12 @@ let tilemap;
 let player_idle = [];
 let player_left = [];
 let player_right = [];
+let player_front = [];
+let player_back = [];
+let player_shadow;
+
+let e;
+let pixellari;
 
 let map = [
     [3, 2, 1, 17, 18, 1, 2, 1, 1, 3, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1],
@@ -17,14 +23,19 @@ let map = [
 ];
 
 let map_stuff = [
-    [20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20],
-    [20, 20, 29, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20],
+    [20, 20, 20, 37, 38, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20],
+    [20, 20, 29, 47, 48, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20],
     [20, 20, 20, 20, 20, 20, 14, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20],
     [20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20],
     [20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20],
     [20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20],
     [20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20]
 ]
+
+let slct_detector = {
+    about: [27, 28, 17, 18],
+    mail: [19]
+}
 
 let col_list = [22, 23, 24, 25, 31, 32, 33, 34, 35, 36, 12, 13, 15, 16, 4, 17, 18];
 let inte_list = [27, 28, 29, 19, 11];
@@ -37,15 +48,15 @@ let lastCameraY = 0;
 
 let playerX, playerY;
 
-let camXSpeed = 3;
-let camYSpeed = 3;
+let camXSpeed = 4;
+let camYSpeed = 4;
 
 let frame = 0;
 let pool_state = true;
 
 let player_state = 'idle';
 let player_cos = 0;
-let prollylast = 'left';
+let playerTile;
 
 function preload() {
     texture = loadImage('assets/tilemap.png')
@@ -64,6 +75,21 @@ function preload() {
     player_right[1] = loadImage('assets/player-right2.png');
     player_right[2] = loadImage('assets/player-right3.png');
     player_right[3] = loadImage('assets/player-right4.png');
+
+    player_front[0] = loadImage('assets/player-front1.png');
+    player_front[1] = loadImage('assets/player-front2.png');
+    player_front[2] = loadImage('assets/player-front3.png');
+    player_front[3] = loadImage('assets/player-front4.png');
+
+    player_back[0] = loadImage('assets/player-back1.png');
+    player_back[1] = loadImage('assets/player-back2.png');
+    player_back[2] = loadImage('assets/player-back3.png');
+    player_back[3] = loadImage('assets/player-back4.png');
+
+    player_shadow = loadImage('assets/player-shadow.png');
+
+    e = loadImage('assets/e.png');
+    pixellari = loadFont('assets/Pixellari.ttf');
 }
 
 function setup() {
@@ -71,6 +97,7 @@ function setup() {
     canvas.parent('game');
 
     noSmooth();
+    frameRate(60);
 
     tilemap = new Tilemap([0, 0], [5000, 5000], [32, 32], texture, []);
     items = new Tilemap([0, 0], [5000, 5000], [32, 32], texture, []);
@@ -129,25 +156,58 @@ function isCollidingInteractable(offsetX = 0, offsetY = 0) {
     return tile !== null && inte_list.includes(tile);
 }
 
+function isClose(tiles) {
+    for (const tile of tiles) {
+        if (playerTile.includes(tile)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+function drawInteractE(name) {
+    textSize(40);
+    fill(0);
+    textFont(pixellari);
+    text(`interact: ${name}`, 110, 550);
+
+    image(e, 20, scaler.height() - 100, 80, 80);
+}
+
+function teleporter() {
+    if (playerTile.includes(21) || playerTile.includes(24)) {
+        textSize(40);
+        fill(0);
+        textFont(pixellari);
+        text("teleport to github", 110, 550);
+
+        image(e, 20, scaler.height() - 100, 80, 80);
+
+        if (keyIsDown("E".charCodeAt(0))) {
+            window.open("https://github.com/codingkatty", "_blank");
+        }
+    }
+}
+
 function moveCharacter() {
     lastCameraX = cameraX;
     lastCameraY = cameraY;
 
 
     if (keyIsDown("W".charCodeAt(0))) {
-        if (!isCollidingTile(0, -34) && !isCollidingInteractable(0, -20)) {
+        if (!isCollidingTile(0, 0) && !isCollidingInteractable(0, -20)) {
             cameraY -= camYSpeed;
         }
 
-        player_state = prollylast;
+        player_state = 'back';
     }
 
     if (keyIsDown("S".charCodeAt(0))) {
-        if (!isCollidingTile(0, 34) && !isCollidingInteractable(0, 20)) {
+        if (!isCollidingTile(0, 170) && !isCollidingInteractable(0, 30)) {
             cameraY += camYSpeed;
         }
 
-        player_state = prollylast;
+        player_state = 'front';
     }
 
     if (keyIsDown("A".charCodeAt(0))) {
@@ -155,12 +215,11 @@ function moveCharacter() {
             cameraX -= camXSpeed;
         }
 
-        if (isCollidingInteractable(0, 0)) {
+        if ((isCollidingInteractable(0, 0) || isCollidingTile(0, 0))) {
             cameraX -= camXSpeed;
         }
 
-        prollylast = 'left';
-        player_state = prollylast;
+        player_state = 'left';
     }
 
     if (keyIsDown("D".charCodeAt(0))) {
@@ -168,12 +227,11 @@ function moveCharacter() {
             cameraX += camXSpeed;
         }
 
-        if (isCollidingInteractable(0, 0)) {
+        if (isCollidingInteractable(0, 0) || isCollidingTile(0, 0)) {
             cameraX += camXSpeed;
         }
 
-        prollylast = 'right';
-        player_state = prollylast;
+        player_state = 'right';
     }
 
     if (!keyIsDown("W".charCodeAt(0)) && !keyIsDown("S".charCodeAt(0)) &&
@@ -186,6 +244,7 @@ function moveCharacter() {
 }
 
 function drawPlayer(x, y, costume) {
+    image(player_shadow, x, y, 100, 200);
     image(costume, x, y, 100, 200);
 }
 
@@ -213,9 +272,27 @@ function draw() {
         drawPlayer(playerX, playerY, player_left[player_cos]);
     } else if (player_state === 'right') {
         drawPlayer(playerX, playerY, player_right[player_cos]);
+    } else if (player_state === 'front') {
+        drawPlayer(playerX, playerY, player_front[player_cos]);
+    } else if (player_state === 'back') {
+        drawPlayer(playerX, playerY, player_back[player_cos]);
     }
 
     items.display();
+
+    playerTile = [getPlayerTile(0, -60), getPlayerTile(0, 60), getPlayerTile(-60, 0), getPlayerTile(60, 0)];
+    teleporter();
+
+    if (isClose(slct_detector.about)) {
+        map_stuff[0] = [20, 20, 20, 39, 40, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20]
+        drawInteractE('about');
+    } else if (isClose(slct_detector.mail)) {
+        drawInteractE('mail');
+    }
+    
+    if (!isClose(slct_detector.about)) {
+        map_stuff[0] = [20, 20, 20, 37, 38, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20]
+    }
 
 
     if (pool_state) {
@@ -227,9 +304,15 @@ function draw() {
         map[3] = [1, 2, 1, 1, 2, 1, 21, 22, 23, 10, 3, 1, 3, 1, 1, 2, 1, 3, 2, 1]
         map[4] = [3, 1, 3, 1, 1, 1, 31, 32, 33, 10, 1, 3, 1, 1, 3, 1, 3, 1, 1, 2]
     }
+
     for (let y = 0; y < map.length; y++) {
         for (let x = 0; x < map[y].length; x++) {
             tilemap.tilemap[x][y] = map[y][x];
+        }
+    }
+    for (let y = 0; y < map_stuff.length; y++) {
+        for (let x = 0; x < map_stuff[y].length; x++) {
+            items.tilemap[x][y] = map_stuff[y][x];
         }
     }
 }
