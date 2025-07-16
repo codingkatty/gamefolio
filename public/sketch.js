@@ -16,8 +16,18 @@ let map = [
     [2, 1, 2, 1, 1, 1, 1, 3, 1, 1, 2, 1, 3, 1, 1, 1, 1, 1, 1, 1]
 ];
 
+let map_stuff = [
+    [20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20],
+    [20, 20, 29, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20],
+    [20, 20, 20, 20, 20, 20, 14, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20],
+    [20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20],
+    [20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20],
+    [20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20],
+    [20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20]
+]
+
 let col_list = [22, 23, 24, 25, 31, 32, 33, 34, 35, 36, 12, 13, 15, 16, 4, 17, 18];
-let inte_list = [27, 28, 29, 19];
+let inte_list = [27, 28, 29, 19, 11];
 
 let cameraX = -300;
 let cameraY = 0;
@@ -63,6 +73,7 @@ function setup() {
     noSmooth();
 
     tilemap = new Tilemap([0, 0], [5000, 5000], [32, 32], texture, []);
+    items = new Tilemap([0, 0], [5000, 5000], [32, 32], texture, []);
 
     for (let i = 0; i < 10; i++)
         for (let j = 0; j < 10; j++)
@@ -71,6 +82,16 @@ function setup() {
     for (let y = 0; y < map.length; y++) {
         for (let x = 0; x < map[y].length; x++) {
             tilemap.tilemap[x][y] = map[y][x];
+        }
+    }
+
+    for (let i = 0; i < 10; i++)
+        for (let j = 0; j < 10; j++)
+            items.tiles.push([j * 33, i * 33, 32, 32])
+
+    for (let y = 0; y < map_stuff.length; y++) {
+        for (let x = 0; x < map_stuff[y].length; x++) {
+            items.tilemap[x][y] = map_stuff[y][x];
         }
     }
 
@@ -114,7 +135,7 @@ function moveCharacter() {
 
 
     if (keyIsDown("W".charCodeAt(0))) {
-        if (!isCollidingTile(0, -34) && !isCollidingInteractable(0, 40)) {
+        if (!isCollidingTile(0, -34) && !isCollidingInteractable(0, -20)) {
             cameraY -= camYSpeed;
         }
 
@@ -122,11 +143,7 @@ function moveCharacter() {
     }
 
     if (keyIsDown("S".charCodeAt(0))) {
-        if (!isCollidingTile(0, 34) && !isCollidingInteractable(0, 40)) {
-            cameraY += camYSpeed;
-        }
-
-        if (isCollidingInteractable(0, 40)) {
+        if (!isCollidingTile(0, 34) && !isCollidingInteractable(0, 20)) {
             cameraY += camYSpeed;
         }
 
@@ -138,7 +155,7 @@ function moveCharacter() {
             cameraX -= camXSpeed;
         }
 
-        if (isCollidingInteractable(0, 40)) {
+        if (isCollidingInteractable(0, 0)) {
             cameraX -= camXSpeed;
         }
 
@@ -151,7 +168,7 @@ function moveCharacter() {
             cameraX += camXSpeed;
         }
 
-        if (isCollidingInteractable(0, 40)) {
+        if (isCollidingInteractable(0, 0)) {
             cameraX += camXSpeed;
         }
 
@@ -165,6 +182,7 @@ function moveCharacter() {
     }
 
     tilemap.pos = [-cameraX, -cameraY];
+    items.pos = [-cameraX, -cameraY];
 }
 
 function drawPlayer(x, y, costume) {
@@ -196,6 +214,9 @@ function draw() {
     } else if (player_state === 'right') {
         drawPlayer(playerX, playerY, player_right[player_cos]);
     }
+
+    items.display();
+
 
     if (pool_state) {
         map[2] = [1, 7, 5, 5, 5, 6, 11, 15, 16, 10, 1, 1, 2, 1, 1, 3, 1, 1, 1, 1]
