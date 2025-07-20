@@ -11,6 +11,8 @@ let player_shadow;
 
 let e;
 let pixellari;
+let modal;
+let myself;
 
 let map = [
     [3, 2, 1, 17, 18, 1, 2, 1, 1, 3, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1],
@@ -41,7 +43,7 @@ let col_list = [22, 23, 24, 25, 31, 32, 33, 34, 35, 36, 12, 13, 15, 16, 4, 17, 1
 let inte_list = [27, 28, 29, 19, 11];
 
 let cameraX = -300;
-let cameraY = 0;
+let cameraY = -200;
 
 let lastCameraX = -300;
 let lastCameraY = 0;
@@ -57,6 +59,10 @@ let pool_state = true;
 let player_state = 'idle';
 let player_cos = 0;
 let playerTile;
+
+let crntModal = "";
+let thetext = [];
+let rainbow;
 
 function preload() {
     texture = loadImage('assets/tilemap.png')
@@ -90,6 +96,8 @@ function preload() {
 
     e = loadImage('assets/e.png');
     pixellari = loadFont('assets/Pixellari.ttf');
+    modal = loadImage('assets/modal.png');
+    myself = loadImage('assets/myself.png');
 }
 
 function setup() {
@@ -98,6 +106,8 @@ function setup() {
 
     noSmooth();
     frameRate(60);
+    imageMode(CENTER);
+    rainbow = color(255, 0, 0);
 
     tilemap = new Tilemap([0, 0], [5000, 5000], [32, 32], texture, []);
     items = new Tilemap([0, 0], [5000, 5000], [32, 32], texture, []);
@@ -171,7 +181,7 @@ function drawInteractE(name) {
     textFont(pixellari);
     text(`interact: ${name}`, 110, 550);
 
-    image(e, 20, scaler.height() - 100, 80, 80);
+    image(e, 60, scaler.height() - 65, 80, 80);
 }
 
 function teleporter() {
@@ -181,10 +191,10 @@ function teleporter() {
         textFont(pixellari);
         text("teleport to github", 110, 550);
 
-        image(e, 20, scaler.height() - 100, 80, 80);
+        image(e, 60, scaler.height() - 65, 80, 80);
 
         if (keyIsDown("E".charCodeAt(0))) {
-            window.open("https://github.com/codingkatty", "_blank");
+            window.open("https://github.com/codingkatty/gamefolio", "_blank");
         }
     }
 }
@@ -248,6 +258,55 @@ function drawPlayer(x, y, costume) {
     image(costume, x, y, 100, 200);
 }
 
+function custom_text(textdata, x, y) {
+    textAlign(LEFT);
+    textSize(20);
+    for (let i = 0; i < textdata.length; i++) {
+        fill(textdata[i][1] || '#000000');
+        if (textdata[i][1] === 'rainbow') {
+            fill(rainbow);
+        }
+        text(textdata[i][0], x, y + i * 30);
+    }
+
+}
+
+function drawModal(content) {
+    image(modal, scaler.width() / 2, scaler.height() / 2, 194 * 3.3, 124 * 3.3);
+
+    textSize(20);
+    textAlign(LEFT);
+    fill(0);
+    custom_text(content, scaler.width() / 2 - 270, scaler.height() / 2 - 130);
+
+    if (crntModal === 'about') {
+        push();
+        rotate(0.3);
+        image(myself, 700, 140, 32 * 3.5, 48 * 3.5);
+        pop();
+    }
+}
+
+const deg = Math.PI / 180;
+
+function rotateRGBHue(r, g, b, hue) {
+    const cosA = Math.cos(hue * deg);
+    const sinA = Math.sin(hue * deg);
+    const neo = [
+        cosA + (1 - cosA) / 3,
+        (1 - cosA) / 3 - Math.sqrt(1 / 3) * sinA,
+        (1 - cosA) / 3 + Math.sqrt(1 / 3) * sinA,
+    ];
+    const rr = r * neo[0] + g * neo[1] + b * neo[2];
+    const gg = r * neo[2] + g * neo[0] + b * neo[1];
+    const bb = r * neo[1] + g * neo[2] + b * neo[0];
+    return [uint8(rr), uint8(gg), uint8(bb)];
+}
+
+function uint8(value) {
+    return value < 0 ? 0 : value > 255 ? 255 : Math.round(value);
+}
+
 function draw() {
     background(185, 237, 120);
 
@@ -289,7 +348,7 @@ function draw() {
     } else if (isClose(slct_detector.mail)) {
         drawInteractE('mail');
     }
-    
+
     if (!isClose(slct_detector.about)) {
         map_stuff[0] = [20, 20, 20, 37, 38, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20]
     }
@@ -313,6 +372,41 @@ function draw() {
     for (let y = 0; y < map_stuff.length; y++) {
         for (let x = 0; x < map_stuff[y].length; x++) {
             items.tilemap[x][y] = map_stuff[y][x];
+        }
+    }
+
+    const [r0, g0, b0] = rotateRGBHue(255, 0, 0, frame);
+    rainbow = color(r0, g0, b0);
+
+    if (crntModal !== "") {
+        drawModal(thetext);
+    }
+}
+
+function keyPressed() {
+    if (key.toUpperCase() === 'E') {
+        if (crntModal != '') {
+            crntModal = '';
+        } else if (isClose(slct_detector.about)) {
+            crntModal = 'about';
+            thetext = [
+                ["I'm Candy (Xin Ying), a student from Kolej PERMATA@Pintar", "#000000"],
+                ["Negara. I am passionate about creating cool projects", "#000000"],
+                ["and my dream is to become a software engineer or an", "#000000"],
+                ["indie game developer.", "#000000"]
+            ];
+        } else if (isClose(slct_detector.mail)) {
+            crntModal = 'mail';
+            thetext = [
+                ["Welcome!", "rainbow"],
+                ["This is my little world which I call my portfolio.", ""],
+                ["Use WASD to move around and E to interact. Have fun!", ""],
+                ["", ""],
+                ["* * * * *", "#ffaa00"],
+                ["", ""],
+                ["v1.0.0 - the first version! game-like, cool, with all the basics.", ""],
+                ["Look around and explore!", ""]
+            ];
         }
     }
 }
