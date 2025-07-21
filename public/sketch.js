@@ -65,39 +65,39 @@ let thetext = [];
 let rainbow;
 
 function preload() {
-    texture = loadImage('assets/tilemap.png')
+    texture = loadImage('public/assets/tilemap.png')
 
-    player_idle[0] = loadImage('assets/player-idle1.png');
-    player_idle[1] = loadImage('assets/player-idle2.png');
-    player_idle[2] = loadImage('assets/player-idle3.png');
-    player_idle[3] = loadImage('assets/player-idle4.png');
+    player_idle[0] = loadImage('public/assets/player-idle1.png');
+    player_idle[1] = loadImage('public/assets/player-idle2.png');
+    player_idle[2] = loadImage('public/assets/player-idle3.png');
+    player_idle[3] = loadImage('public/assets/player-idle4.png');
 
-    player_left[0] = loadImage('assets/player-left1.png');
-    player_left[1] = loadImage('assets/player-left2.png');
-    player_left[2] = loadImage('assets/player-left3.png');
-    player_left[3] = loadImage('assets/player-left4.png');
+    player_left[0] = loadImage('public/assets/player-left1.png');
+    player_left[1] = loadImage('public/assets/player-left2.png');
+    player_left[2] = loadImage('public/assets/player-left3.png');
+    player_left[3] = loadImage('public/assets/player-left4.png');
 
-    player_right[0] = loadImage('assets/player-right1.png');
-    player_right[1] = loadImage('assets/player-right2.png');
-    player_right[2] = loadImage('assets/player-right3.png');
-    player_right[3] = loadImage('assets/player-right4.png');
+    player_right[0] = loadImage('public/assets/player-right1.png');
+    player_right[1] = loadImage('public/assets/player-right2.png');
+    player_right[2] = loadImage('public/assets/player-right3.png');
+    player_right[3] = loadImage('public/assets/player-right4.png');
 
-    player_front[0] = loadImage('assets/player-front1.png');
-    player_front[1] = loadImage('assets/player-front2.png');
-    player_front[2] = loadImage('assets/player-front3.png');
-    player_front[3] = loadImage('assets/player-front4.png');
+    player_front[0] = loadImage('public/assets/player-front1.png');
+    player_front[1] = loadImage('public/assets/player-front2.png');
+    player_front[2] = loadImage('public/assets/player-front3.png');
+    player_front[3] = loadImage('public/assets/player-front4.png');
 
-    player_back[0] = loadImage('assets/player-back1.png');
-    player_back[1] = loadImage('assets/player-back2.png');
-    player_back[2] = loadImage('assets/player-back3.png');
-    player_back[3] = loadImage('assets/player-back4.png');
+    player_back[0] = loadImage('public/assets/player-back1.png');
+    player_back[1] = loadImage('public/assets/player-back2.png');
+    player_back[2] = loadImage('public/assets/player-back3.png');
+    player_back[3] = loadImage('public/assets/player-back4.png');
 
-    player_shadow = loadImage('assets/player-shadow.png');
+    player_shadow = loadImage('public/assets/player-shadow.png');
 
-    e = loadImage('assets/e.png');
-    pixellari = loadFont('assets/Pixellari.ttf');
-    modal = loadImage('assets/modal.png');
-    myself = loadImage('assets/myself.png');
+    e = loadImage('public/assets/e.png');
+    pixellari = loadFont('public/assets/Pixellari.ttf');
+    modal = loadImage('public/assets/modal.png');
+    myself = loadImage('public/assets/myself.png');
 }
 
 function setup() {
@@ -282,6 +282,7 @@ function drawModal(content) {
     if (crntModal === 'about') {
         push();
         rotate(0.3);
+        translate(-60, 20);
         image(myself, 700, 140, 32 * 3.5, 48 * 3.5);
         pop();
     }
@@ -390,10 +391,13 @@ function keyPressed() {
         } else if (isClose(slct_detector.about)) {
             crntModal = 'about';
             thetext = [
-                ["I'm Candy (Xin Ying), a student from Kolej PERMATA@Pintar", "#000000"],
-                ["Negara. I am passionate about creating cool projects", "#000000"],
-                ["and my dream is to become a software engineer or an", "#000000"],
-                ["indie game developer.", "#000000"]
+                ["I'm Candy (Xin Ying), a student from Kolej PERMATA@Pintar", ""],
+                ["Negara. I am passionate about creating cool projects", ""],
+                ["and my dream is to become a software engineer or an", ""],
+                ["indie game developer.", ""],
+                ["", ""],
+                ["              candyisakat@gmail.com", "#1a007a"],
+                ["              @codingkatty - GitHub", "#1a007a"],
             ];
         } else if (isClose(slct_detector.mail)) {
             crntModal = 'mail';
