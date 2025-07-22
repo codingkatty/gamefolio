@@ -464,7 +464,7 @@ function keyPressed() {
     }
 }
 
-const socket = io("https://game.candyisacat.hackclub.app:43625");
+const socket = io("https://game.candyisacat.hackclub.app");
 let players = {};
 
 socket.on('players', (d) => {
