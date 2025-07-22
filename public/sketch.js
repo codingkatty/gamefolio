@@ -46,7 +46,8 @@ let cameraX = -300;
 let cameraY = -200;
 
 let lastCameraX = -300;
-let lastCameraY = 0;
+let lastCameraY = -200;
+let lastState = 'idle';
 
 let playerX, playerY;
 
@@ -202,6 +203,7 @@ function teleporter() {
 function moveCharacter() {
     lastCameraX = cameraX;
     lastCameraY = cameraY;
+    lastState = player_state;
 
 
     if (keyIsDown("W".charCodeAt(0))) {
@@ -251,6 +253,9 @@ function moveCharacter() {
 
     tilemap.pos = [-cameraX, -cameraY];
     items.pos = [-cameraX, -cameraY];
+    if (cameraX !== lastCameraX || cameraY !== lastCameraY || player_state !== lastState) {
+        socket.emit('move', { x: cameraX, y: cameraY, state: player_state });
+    }
 }
 
 function drawPlayer(x, y, costume) {
@@ -308,6 +313,7 @@ function uint8(value) {
     return value < 0 ? 0 : value > 255 ? 255 : Math.round(value);
 }
 
+let screenX, screenY;
 function draw() {
     background(185, 237, 120);
 
@@ -326,6 +332,28 @@ function draw() {
     }
     frame++;
 
+    // draw other players behind local player
+    for (const id in players) {
+        if (id == socket.id) continue;
+        const p = players[id];
+        const otherX = (p.x - cameraX) + playerX;
+        const otherY = (p.y - cameraY) + playerY;
+        if (otherY < playerY) {
+            if (p.state === 'idle') {
+                drawPlayer(otherX, otherY, player_idle[player_cos]);
+            } else if (p.state === 'left') {
+                drawPlayer(otherX, otherY, player_left[player_cos]);
+            } else if (p.state === 'right') {
+                drawPlayer(otherX, otherY, player_right[player_cos]);
+            } else if (p.state === 'front') {
+                drawPlayer(otherX, otherY, player_front[player_cos]);
+            } else if (p.state === 'back') {
+                drawPlayer(otherX, otherY, player_back[player_cos]);
+            }
+        }
+    }
+
+    // draw local player
     if (player_state === 'idle') {
         drawPlayer(playerX, playerY, player_idle[player_cos]);
     } else if (player_state === 'left') {
@@ -336,6 +364,27 @@ function draw() {
         drawPlayer(playerX, playerY, player_front[player_cos]);
     } else if (player_state === 'back') {
         drawPlayer(playerX, playerY, player_back[player_cos]);
+    }
+
+    // draw other players in front of local player
+    for (const id in players) {
+        if (id == socket.id) continue;
+        const p = players[id];
+        const otherX = (p.x - cameraX) + playerX;
+        const otherY = (p.y - cameraY) + playerY;
+        if (otherY >= playerY) {
+            if (p.state === 'idle') {
+                drawPlayer(otherX, otherY, player_idle[player_cos]);
+            } else if (p.state === 'left') {
+                drawPlayer(otherX, otherY, player_left[player_cos]);
+            } else if (p.state === 'right') {
+                drawPlayer(otherX, otherY, player_right[player_cos]);
+            } else if (p.state === 'front') {
+                drawPlayer(otherX, otherY, player_front[player_cos]);
+            } else if (p.state === 'back') {
+                drawPlayer(otherX, otherY, player_back[player_cos]);
+            }
+        }
     }
 
     items.display();
@@ -414,3 +463,10 @@ function keyPressed() {
         }
     }
 }
+
+const socket = io("https://game.candyisacat.hackclub.app:43625");
+let players = {};
+
+socket.on('players', (d) => {
+    players = d;
+});
