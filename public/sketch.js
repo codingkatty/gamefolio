@@ -15,17 +15,17 @@ let modal;
 let myself;
 
 let map = [
-    [3, 2, 1, 17, 18, 1, 2, 1, 1, 3, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1],
-    [2, 1, 19, 27, 28, 8, 5, 5, 5, 9, 1, 3, 1, 2, 1, 1, 1, 3, 1, 2],
-    [1, 7, 5, 5, 5, 6, 11, 12, 13, 10, 1, 1, 2, 1, 1, 3, 1, 1, 1, 1],
-    [1, 2, 1, 1, 2, 1, 21, 22, 23, 10, 3, 1, 3, 1, 1, 2, 1, 3, 2, 1],
-    [3, 1, 3, 1, 1, 1, 31, 32, 33, 10, 1, 3, 1, 1, 3, 1, 3, 1, 1, 2],
-    [1, 7, 5, 5, 5, 5, 5, 5, 5, 6, 2, 1, 1, 2, 1, 1, 1, 3, 1, 1],
+    [3, 2, 1, 17, 18, 41, 42, 43, 44, 45, 46, 1, 2, 1, 1, 1, 1, 1, 1, 1],
+    [2, 1, 19, 27, 28, 8, 5, 5, 5, 9, 51, 3, 1, 2, 1, 1, 1, 3, 1, 2],
+    [1, 7, 5, 5, 5, 6, 11, 12, 13, 10, 52, 1, 2, 1, 1, 3, 1, 1, 1, 1],
+    [1, 2, 1, 1, 2, 1, 21, 22, 23, 10, 51, 1, 3, 1, 1, 2, 1, 3, 2, 1],
+    [3, 1, 3, 1, 1, 1, 31, 32, 33, 10, 53, 3, 1, 1, 3, 1, 3, 1, 1, 2],
+    [1, 7, 5, 5, 5, 5, 5, 5, 5, 6, 51, 1, 1, 2, 1, 1, 1, 3, 1, 1],
     [2, 1, 2, 1, 1, 1, 1, 3, 1, 1, 2, 1, 3, 1, 1, 1, 1, 1, 1, 1]
 ];
 
 let map_stuff = [
-    [20, 20, 20, 37, 38, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20],
+    [20, 20, 20, 37, 38, 41, 42, 43, 44, 45, 46, 20, 20, 20, 20, 20, 20, 20, 20, 20],
     [20, 20, 29, 47, 48, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20],
     [20, 20, 20, 20, 20, 20, 14, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20],
     [20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20],
@@ -36,11 +36,17 @@ let map_stuff = [
 
 let slct_detector = {
     about: [27, 28, 17, 18],
-    mail: [19]
+    mail: [19],
+    bb_catesc: [41],
+    bb_meowpad: [42],
+    bb_organisr: [43],
+    bb_y2k: [44],
+    bb_aries: [45],
+    bb_dodo: [46]
 }
 
 let col_list = [22, 23, 24, 25, 31, 32, 33, 34, 35, 36, 12, 13, 15, 16, 4, 17, 18];
-let inte_list = [27, 28, 29, 19, 11];
+let inte_list = [27, 28, 29, 19, 11, 41, 42, 43, 44, 45, 46];
 
 let cameraX = -300;
 let cameraY = -200;
@@ -135,6 +141,7 @@ function setup() {
 
     playerX = scaler.width() / 2;
     playerY = scaler.height() / 2;
+    socket.emit('move', { x: cameraX, y: cameraY, state: player_state });
 }
 
 function getTileAt(worldX, worldY) {
@@ -207,7 +214,7 @@ function moveCharacter() {
 
 
     if (keyIsDown("W".charCodeAt(0))) {
-        if (!isCollidingTile(0, 0) && !isCollidingInteractable(0, -20)) {
+        if (!isCollidingTile(0, 0) && !isCollidingInteractable(0, -40)) {
             cameraY -= camYSpeed;
         }
 
@@ -290,6 +297,22 @@ function drawModal(content) {
         translate(-60, 20);
         image(myself, 700, 140, 32 * 3.5, 48 * 3.5);
         pop();
+    }
+
+    if (keyIsDown("F".charCodeAt(0))) {
+        if (crntModal === 'catesc') {
+            window.open("https://escape.violetzcandy.com/", "_blank");
+        } else if (crntModal === 'meowpad') {
+            window.open("https://github.com/codingkatty/meowpad", "_blank");
+        } else if (crntModal === 'organisr') {
+            window.open("https://github.com/codingkatty/organisr", "_blank");
+        } else if (crntModal === 'y2k') {
+            window.open("https://github.com/codingkatty/y2kos", "_blank");
+        } else if (crntModal === 'aries') {
+            window.open("https://github.com/codingkatty/aries", "_blank");
+        } else if (crntModal === 'dodo') {
+            window.open("https://github.com/codingkatty/extension", "_blank");
+        }
     }
 }
 
@@ -393,25 +416,37 @@ function draw() {
     teleporter();
 
     if (isClose(slct_detector.about)) {
-        map_stuff[0] = [20, 20, 20, 39, 40, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20]
+        map_stuff[0] = [20, 20, 20, 39, 40, 41, 42, 43, 44, 45, 46, 20, 20, 20, 20, 20, 20, 20, 20, 20]
         drawInteractE('about');
     } else if (isClose(slct_detector.mail)) {
         drawInteractE('mail');
+    } else if (isClose(slct_detector.bb_catesc)) {
+        drawInteractE('Cat Escape Room');
+    } else if (isClose(slct_detector.bb_meowpad)) {
+        drawInteractE('Meowpad');
+    } else if (isClose(slct_detector.bb_organisr)) {
+        drawInteractE('Organisr');
+    } else if (isClose(slct_detector.bb_y2k)) {
+        drawInteractE('Y2K WebOS');
+    } else if (isClose(slct_detector.bb_aries)) {
+        drawInteractE('Project Aries');
+    } else if (isClose(slct_detector.bb_dodo)) {
+        drawInteractE('Dodo Sketchboard');
     }
 
     if (!isClose(slct_detector.about)) {
-        map_stuff[0] = [20, 20, 20, 37, 38, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20]
+        map_stuff[0] = [20, 20, 20, 37, 38, 41, 42, 43, 44, 45, 46, 20, 20, 20, 20, 20, 20, 20, 20, 20]
     }
 
 
     if (pool_state) {
-        map[2] = [1, 7, 5, 5, 5, 6, 11, 15, 16, 10, 1, 1, 2, 1, 1, 3, 1, 1, 1, 1]
-        map[3] = [1, 2, 1, 1, 2, 1, 24, 25, 26, 10, 3, 1, 3, 1, 1, 2, 1, 3, 2, 1]
-        map[4] = [3, 1, 3, 1, 1, 1, 34, 35, 36, 10, 1, 3, 1, 1, 3, 1, 3, 1, 1, 2]
+        map[2] = [1, 7, 5, 5, 5, 6, 11, 15, 16, 10, 52, 1, 2, 1, 1, 3, 1, 1, 1, 1]
+        map[3] = [1, 2, 1, 1, 2, 1, 24, 25, 26, 10, 51, 1, 3, 1, 1, 2, 1, 3, 2, 1]
+        map[4] = [3, 1, 3, 1, 1, 1, 34, 35, 36, 10, 53, 3, 1, 1, 3, 1, 3, 1, 1, 2]
     } else {
-        map[2] = [1, 7, 5, 5, 5, 6, 11, 12, 13, 10, 1, 1, 2, 1, 1, 3, 1, 1, 1, 1]
-        map[3] = [1, 2, 1, 1, 2, 1, 21, 22, 23, 10, 3, 1, 3, 1, 1, 2, 1, 3, 2, 1]
-        map[4] = [3, 1, 3, 1, 1, 1, 31, 32, 33, 10, 1, 3, 1, 1, 3, 1, 3, 1, 1, 2]
+        map[2] = [1, 7, 5, 5, 5, 6, 11, 12, 13, 10, 52, 1, 2, 1, 1, 3, 1, 1, 1, 1]
+        map[3] = [1, 2, 1, 1, 2, 1, 21, 22, 23, 10, 51, 1, 3, 1, 1, 2, 1, 3, 2, 1]
+        map[4] = [3, 1, 3, 1, 1, 1, 31, 32, 33, 10, 53, 3, 1, 1, 3, 1, 3, 1, 1, 2]
     }
 
     for (let y = 0; y < map.length; y++) {
@@ -459,6 +494,79 @@ function keyPressed() {
                 ["", ""],
                 ["v1.0.0 - the first version! game-like, cool, with all the basics.", ""],
                 ["Look around and explore!", ""]
+            ];
+        } else if (isClose(slct_detector.bb_catesc)) {
+            crntModal = 'catesc';
+            thetext = [
+                ["Cat Escape", ""],
+                ["A team project with @violetz12 / Zhi Cheng", "#8d2800"],
+                ["", ""],
+                ["Escape the cat- a thrilling escape room to explore! As a bird ", ""],
+                ["or a mouse, navigate the puzzle and find your way out. Did ", ""],
+                ["I mention that it was a co-op game too?", ""],
+                ["", ""],
+                ["Press F to teleport to game!!", "#ff7b00"]
+            ];
+        } else if (isClose(slct_detector.bb_meowpad)) {
+            crntModal = 'meowpad';
+            thetext = [
+                ["Meowpad: cat themed macropad", "#50007a"],
+                ["A submission for #highway, too.", ""],
+                ["", ""],
+                ["Meowpad is a macropad that features 4 keys, a neopixel and ", ""],
+                ["a 0.91\" OLED screen. The color scheme is purple-ish and it ", ""],
+                ["is generally cat themed.", ""],
+                ["", ""],
+                ["Press F to open github repository", "#50007a"]
+            ];
+        } else if (isClose(slct_detector.bb_organisr)) {
+            crntModal = 'organisr';
+            thetext = [
+                ["Organisr", "rainbow"],
+                ["", ""],
+                ["There were times when I lost stuff and wished I've known ", ""],
+                ["where they were.", ""],
+                ["So I made organisr. This app can be used to store where your ", ""],
+                ["belongings are. You can take a picture and add it into a 'box',", ""],
+                ["which is a virtual container for your items.", ""],
+                ["", ""],
+                ["Press F to open github repository", "rainbow"]
+            ];
+        } else if (isClose(slct_detector.bb_y2k)) {
+            crntModal = 'y2k';
+            thetext = [
+                ["Y2K WebOS", "rainbow"],
+                ["A retro-inspired WebOS.", ""],
+                ["", ""],
+                ["I joined a retro themed hackathon- and this was the best idea ", ""],
+                ["that popped in my mind. I had this vision of a retro WebOS ", ""],
+                ["that is themed around the Y2K bug that happened in 2000.", ""],
+                ["", ""],
+                ["PRESS F- TAKE ME TO YOUR REPOSITORY (error 2000)", "#1d7200"],
+            ];
+        } else if (isClose(slct_detector.bb_aries)) {
+            crntModal = 'aries';
+            thetext = [
+                ["Project Aries", "#220072"],
+                ["Cool map about exoplanets! Made with Zhi Cheng", ""],
+                ["", ""],
+                ["This project is a map that shows all exoplanets, using data ", ""],
+                ["from NASA. It was a submission to the NASA Space Apps ", ""],
+                ["Challenge.", ""],
+                ["", ""],
+                ["Press F to rocket to the repository!", "#220072"],
+            ];
+        } else if (isClose(slct_detector.bb_dodo)) {
+            crntModal = 'dodo';
+            thetext = [
+                ["Dodo Sketchboard", "#ff0088"],
+                ["Note extension for chrome!", ""],
+                ["", ""],
+                ["A simple sketchboard you can use to jot down things right in ", ""],
+                ["your browser- very convenient and easy to use! It is ", ""],
+                ["currently available in the chrome web store.", ""],
+                ["", ""],
+                ["Press F to open the repository.", "#ff0088"],
             ];
         }
     }
