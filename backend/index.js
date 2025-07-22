@@ -33,6 +33,10 @@ io.on('connection', (socket) => {
     });
 });
 
+app.get('/status', (req, res) => {
+    res.json({ status: 'ok', players: Object.keys(players).length });
+});
+
 server.listen(port, () => {
   console.log(`server running at port ${port}`);
 });
