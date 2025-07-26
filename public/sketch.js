@@ -7,19 +7,24 @@ let player_left = [];
 let player_right = [];
 let player_front = [];
 let player_back = [];
+let player_dance = [];
 let player_shadow;
 
 let e;
 let pixellari;
 let modal;
 let myself;
+let sounds = [];
+let crntsi = 0;
+let rainingtacos;
+let taco;
 
 let map = [
     [3, 2, 1, 17, 18, 41, 42, 43, 44, 45, 46, 1, 2, 1, 1, 1, 1, 1, 1, 1],
     [2, 1, 19, 27, 28, 8, 5, 5, 5, 9, 51, 3, 1, 2, 1, 1, 1, 3, 1, 2],
-    [1, 7, 5, 5, 5, 6, 11, 12, 13, 10, 52, 1, 2, 1, 1, 3, 1, 1, 1, 1],
-    [1, 2, 1, 1, 2, 1, 21, 22, 23, 10, 51, 1, 3, 1, 1, 2, 1, 3, 2, 1],
-    [3, 1, 3, 1, 1, 1, 31, 32, 33, 10, 53, 3, 1, 1, 3, 1, 3, 1, 1, 2],
+    [1, 7, 5, 5, 5, 6, 11, 12, 13, 10, 52, 1, 2, 61, 67, 67, 67, 62, 1, 1],
+    [1, 2, 1, 1, 2, 1, 21, 22, 23, 10, 51, 1, 3, 66, 65, 65, 65, 68, 2, 1],
+    [3, 1, 3, 1, 1, 54, 31, 32, 33, 10, 53, 3, 1, 63, 69, 69, 69, 64, 1, 2],
     [1, 7, 5, 5, 5, 5, 5, 5, 5, 6, 51, 1, 1, 2, 1, 1, 1, 3, 1, 1],
     [2, 1, 2, 1, 1, 1, 1, 3, 1, 1, 2, 1, 3, 1, 1, 1, 1, 1, 1, 1]
 ];
@@ -29,7 +34,7 @@ let map_stuff = [
     [20, 20, 29, 47, 48, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20],
     [20, 20, 20, 20, 20, 20, 14, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20],
     [20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20],
-    [20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20],
+    [20, 20, 20, 20, 20, 55, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20],
     [20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20],
     [20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20]
 ]
@@ -42,11 +47,12 @@ let slct_detector = {
     bb_organisr: [43],
     bb_y2k: [44],
     bb_aries: [45],
-    bb_dodo: [46]
+    bb_dodo: [46],
+    jukebox: [54]
 }
 
 let col_list = [22, 23, 24, 25, 31, 32, 33, 34, 35, 36, 12, 13, 15, 16, 4, 17, 18];
-let inte_list = [27, 28, 29, 19, 11, 41, 42, 43, 44, 45, 46];
+let inte_list = [27, 28, 29, 19, 11, 41, 42, 43, 44, 45, 46, 54];
 
 let cameraX = -300;
 let cameraY = -200;
@@ -99,12 +105,28 @@ function preload() {
     player_back[2] = loadImage('public/assets/player-back3.png');
     player_back[3] = loadImage('public/assets/player-back4.png');
 
+    player_dance[0] = loadImage('public/assets/player-dance1.png');
+    player_dance[1] = loadImage('public/assets/player-dance2.png');
+    player_dance[2] = loadImage('public/assets/player-dance3.png');
+    player_dance[3] = loadImage('public/assets/player-dance4.png');
+
     player_shadow = loadImage('public/assets/player-shadow.png');
 
     e = loadImage('public/assets/e.png');
     pixellari = loadFont('public/assets/Pixellari.ttf');
     modal = loadImage('public/assets/modal.png');
     myself = loadImage('public/assets/myself.png');
+
+    sounds[0] = loadSound('public/assets/caketown.mp3');
+    sounds[0].setVolume(0.2);
+    sounds[1] = loadSound('public/assets/petsim.mp3');
+    sounds[1].setVolume(0.2);
+    sounds[2] = loadSound('public/assets/settlingin.mp3');
+    sounds[2].setVolume(0.2);
+
+    rainingtacos = loadSound('public/assets/rainingtacos.mp3');
+    rainingtacos.setVolume(0.6);
+    taco = loadImage('public/assets/taco.png');
 }
 
 function setup() {
@@ -142,6 +164,23 @@ function setup() {
     playerX = scaler.width() / 2;
     playerY = scaler.height() / 2;
     socket.emit('move', { x: cameraX, y: cameraY, state: player_state });
+
+    userStartAudio();
+    playSong();
+}
+
+let crntSong;
+let isBg = true;
+function playSong() {
+    crntSong = sounds[crntsi];
+
+    crntSong.onended(() => {
+        if (isBg) {
+            crntsi = (crntsi + 1) % sounds.length;
+            playSong();
+        }
+    });
+    crntSong.play();
 }
 
 function getTileAt(worldX, worldY) {
@@ -172,6 +211,38 @@ function isCollidingTile(offsetX = 0, offsetY = 0) {
 function isCollidingInteractable(offsetX = 0, offsetY = 0) {
     const tile = getPlayerTile(offsetX, offsetY);
     return tile !== null && inte_list.includes(tile);
+}
+
+let partyl = [];
+for (let i = 61; i <= 99; i++) {
+    partyl.push(i);
+}
+
+function isCollidingParty(offsetX = 0, offsetY = 80) {
+    const tile = getPlayerTile(offsetX, offsetY);
+    return tile !== null && partyl.includes(tile);
+}
+
+let tacopos = [];
+function drawTaco() {
+    for (const pos of tacopos) {
+        push();
+        translate(pos[0], pos[1]);
+        rotate(pos[3]);
+        image(taco, 0, 0, pos[2], pos[2]);
+        pop();
+    }
+}
+
+function updateTaco() {
+    for (let i = tacopos.length - 1; i >= 0; i--) {
+        const pos = tacopos[i];
+        pos[1] += pos[2] / 10;
+        pos[3] += 0.05;
+        if (pos[1] > height) {
+            tacopos.splice(i, 1);
+        }
+    }
 }
 
 function isClose(tiles) {
@@ -258,6 +329,21 @@ function moveCharacter() {
         player_state = 'idle';
     }
 
+    if (isCollidingParty()) {
+        player_state = 'dance';
+        if (isBg) {
+            isBg = false;
+            crntSong.stop();
+            rainingtacos.loop();
+        }
+    } else {
+        if (!isBg) {
+            isBg = true;
+            rainingtacos.stop();
+            playSong();
+        }
+    }
+
     tilemap.pos = [-cameraX, -cameraY];
     items.pos = [-cameraX, -cameraY];
     if (cameraX !== lastCameraX || cameraY !== lastCameraY || player_state !== lastState) {
@@ -336,6 +422,13 @@ function uint8(value) {
     return value < 0 ? 0 : value > 255 ? 255 : Math.round(value);
 }
 
+function vpt(end) {
+    return Number((Math.floor(Math.random() * 4) + 6).toString() + end.toString());
+}
+let randomRow2 = [];
+let randomRow3 = [];
+let randomRow4 = [];
+
 let screenX, screenY;
 function draw() {
     background(185, 237, 120);
@@ -346,6 +439,9 @@ function draw() {
 
     if (frame % 30 == 0) {
         pool_state = !pool_state;
+        randomRow2 = [vpt(1), vpt(7), vpt(7), vpt(7), vpt(2)];
+        randomRow3 = [vpt(6), vpt(5), vpt(5), vpt(5), vpt(8)];
+        randomRow4 = [vpt(3), vpt(9), vpt(9), vpt(9), vpt(4)];
     }
     if (frame % 15 == 0) {
         player_cos += 1;
@@ -372,6 +468,8 @@ function draw() {
                 drawPlayer(otherX, otherY, player_front[player_cos]);
             } else if (p.state === 'back') {
                 drawPlayer(otherX, otherY, player_back[player_cos]);
+            } else if (player_state === 'dance') {
+                drawPlayer(playerX, playerY, player_dance[player_cos]);
             }
         }
     }
@@ -387,6 +485,8 @@ function draw() {
         drawPlayer(playerX, playerY, player_front[player_cos]);
     } else if (player_state === 'back') {
         drawPlayer(playerX, playerY, player_back[player_cos]);
+    } else if (player_state === 'dance') {
+        drawPlayer(playerX, playerY, player_dance[player_cos]);
     }
 
     // draw other players in front of local player
@@ -406,6 +506,8 @@ function draw() {
                 drawPlayer(otherX, otherY, player_front[player_cos]);
             } else if (p.state === 'back') {
                 drawPlayer(otherX, otherY, player_back[player_cos]);
+            } else if (player_state === 'dance') {
+                drawPlayer(playerX, playerY, player_dance[player_cos]);
             }
         }
     }
@@ -438,15 +540,14 @@ function draw() {
         map_stuff[0] = [20, 20, 20, 37, 38, 41, 42, 43, 44, 45, 46, 20, 20, 20, 20, 20, 20, 20, 20, 20]
     }
 
-
     if (pool_state) {
-        map[2] = [1, 7, 5, 5, 5, 6, 11, 15, 16, 10, 52, 1, 2, 1, 1, 3, 1, 1, 1, 1]
-        map[3] = [1, 2, 1, 1, 2, 1, 24, 25, 26, 10, 51, 1, 3, 1, 1, 2, 1, 3, 2, 1]
-        map[4] = [3, 1, 3, 1, 1, 1, 34, 35, 36, 10, 53, 3, 1, 1, 3, 1, 3, 1, 1, 2]
+        map[2] = [1, 7, 5, 5, 5, 6, 11, 15, 16, 10, 52, 1, 2, randomRow2[0], randomRow2[1], randomRow2[2], randomRow2[3], randomRow2[4], 1, 1];
+        map[3] = [1, 2, 1, 1, 2, 1, 24, 25, 26, 10, 51, 1, 3, randomRow3[0], randomRow3[1], randomRow3[2], randomRow3[3], randomRow3[4], 2, 1];
+        map[4] = [3, 1, 3, 1, 1, 54, 34, 35, 36, 10, 53, 3, 1, randomRow4[0], randomRow4[1], randomRow4[2], randomRow4[3], randomRow4[4], 1, 2];
     } else {
-        map[2] = [1, 7, 5, 5, 5, 6, 11, 12, 13, 10, 52, 1, 2, 1, 1, 3, 1, 1, 1, 1]
-        map[3] = [1, 2, 1, 1, 2, 1, 21, 22, 23, 10, 51, 1, 3, 1, 1, 2, 1, 3, 2, 1]
-        map[4] = [3, 1, 3, 1, 1, 1, 31, 32, 33, 10, 53, 3, 1, 1, 3, 1, 3, 1, 1, 2]
+        map[2] = [1, 7, 5, 5, 5, 6, 11, 12, 13, 10, 52, 1, 2, randomRow2[0], randomRow2[1], randomRow2[2], randomRow2[3], randomRow2[4], 1, 1];
+        map[3] = [1, 2, 1, 1, 2, 1, 21, 22, 23, 10, 51, 1, 3, randomRow3[0], randomRow3[1], randomRow3[2], randomRow3[3], randomRow3[4], 2, 1];
+        map[4] = [3, 1, 3, 1, 1, 54, 31, 32, 33, 10, 53, 3, 1, randomRow4[0], randomRow4[1], randomRow4[2], randomRow4[3], randomRow4[4], 1, 2];
     }
 
     for (let y = 0; y < map.length; y++) {
@@ -465,6 +566,14 @@ function draw() {
 
     if (crntModal !== "") {
         drawModal(thetext);
+    }
+
+    if (isCollidingParty()) {
+        if (frame % 20 === 0) {
+            tacopos.push([Math.random() * scaler.width(), 0, Math.random() * 50 + 80, 0]);
+        }
+        updateTaco();
+        drawTaco();
     }
 }
 
